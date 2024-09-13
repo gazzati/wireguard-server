@@ -1,0 +1,28 @@
+import { Controller, Get, Delete, Post, Param, Body } from "@nestjs/common"
+
+import { AppService } from "./app.service"
+
+@Controller()
+export class AppController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get("/health")
+  health(): { success: boolean } {
+    return this.appService.health()
+  }
+
+  @Get("/clients")
+  getClients(): Promise<Array<string>> {
+    return this.appService.getClients()
+  }
+
+  @Post("/client")
+  addClient(@Body() payload: { id: string }): Promise<{ success: boolean }> {
+    return this.appService.addClient(payload.id)
+  }
+
+  @Delete("/client/:id")
+  deleteClient(@Param("id") id: string): Promise<{ success: boolean }> {
+    return this.appService.deleteClient(id)
+  }
+}
