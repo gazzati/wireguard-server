@@ -152,8 +152,8 @@ class Wireguard {
   private async restartWg() {
     // await exec(`wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`)
 
-    await this.exec(`wg-quick down ${wgParams.SERVER_WG_NIC}`)
-    await this.exec(`wg-quick up ${wgParams.SERVER_WG_NIC}`)
+    await this.exec(`sudo wg-quick down ${wgParams.SERVER_WG_NIC}`)
+    await this.exec(`sudo wg-quick up ${wgParams.SERVER_WG_NIC}`)
   }
 
   private async exec(command: string) {
