@@ -10,7 +10,9 @@ dotenv.config()
 
 const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string().valid(Env.Production, Env.Development, Env.Test).default(Env.Development),
-  PORT: Joi.number().default(3000).description("App Port")
+  PORT: Joi.number().default(3000).description("App Port"),
+  IP_WHITELIST: Joi.string().default("").description("List of whitelisted IPs"),
+  API_TOKEN: Joi.string().default("").description("API token")
 })
 
 const { error, value: envVars } = envVarsSchema.validate(process.env)
@@ -56,6 +58,8 @@ const getWgParams = (): WgParams => {
 export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
+  ipWhitelist: envVars.IP_WHITELIST,
+  apiToken: envVars.API_TOKEN,
 
   wgParams: getWgParams()
 }

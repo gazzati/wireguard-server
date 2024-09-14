@@ -8,7 +8,6 @@ const execute = util.promisify(childProcess.exec)
 
 const { wgParams } = config
 
-
 class Wireguard {
   private readonly MAX_CLIENTS = 253
   private readonly profilePath = `/etc/wireguard/${wgParams.SERVER_WG_NIC}.conf`

@@ -17,7 +17,9 @@ export class AppController {
   }
 
   @Post("/client")
-  addClient(@Body() payload: { id: number }): Promise<{ success: boolean, conf: string, qr: string, already_exist?: boolean }> {
+  addClient(
+    @Body() payload: { id: number }
+  ): Promise<{ success: boolean; conf: string; qr: string; already_exist?: boolean }> {
     return this.appService.addClient(payload.id)
   }
 

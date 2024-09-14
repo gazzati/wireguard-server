@@ -4,7 +4,7 @@ import { Injectable } from "@nestjs/common"
 
 import Wireguard from "../wireguard"
 
-import type {CreateClientResponse} from "../intefaces/wg"
+import type { CreateClientResponse } from "../intefaces/wg"
 
 const wg = new Wireguard()
 
@@ -21,13 +21,13 @@ export class AppService {
   async addClient(id: number): Promise<{ success: boolean } & CreateClientResponse> {
     const response = await wg.newClient(id)
 
-    const conf = readFileSync(response.conf);
-    const qr = readFileSync(response.qr);
+    const conf = readFileSync(response.conf)
+    const qr = readFileSync(response.qr)
 
     return {
       success: true,
-      conf: Buffer.from(conf).toString('base64'),
-      qr: Buffer.from(qr).toString('base64'),
+      conf: Buffer.from(conf).toString("base64"),
+      qr: Buffer.from(qr).toString("base64"),
       already_exist: response?.already_exist
     }
   }

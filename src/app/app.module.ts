@@ -1,35 +1,10 @@
-import {
-  Module,
-  NestModule,
-  RequestMethod,
-  MiddlewareConsumer,
-  Injectable,
-  NestMiddleware,
-  Logger
-} from "@nestjs/common"
-import { Request, Response, NextFunction } from "express"
+import { Module, NestModule, RequestMethod, MiddlewareConsumer } from "@nestjs/common"
+
+import { AuthMiddleware } from "../middlewares/auth"
+import { LoggerMiddleware } from "../middlewares/logger"
 
 import { AppController } from "./app.controller"
 import { AppService } from "./app.service"
-
-const logger = new Logger()
-
-@Injectable()
-class LoggerMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
-    const { method, path: url } = req
-
-    res.on("close", () => {
-      const { statusCode } = res
-
-      logger.log(`${method} ${url} - ${statusCode}`)
-    })
-
-    if (next) {
-      next()
-    }
-  }
-}
 
 @Module({
   controllers: [AppController],
@@ -38,5 +13,6 @@ class LoggerMiddleware implements NestMiddleware {
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes({ path: "*", method: RequestMethod.ALL })
+    consumer.apply(AuthMiddleware).forRoutes({ path: "*", method: RequestMethod.ALL })
   }
 }
