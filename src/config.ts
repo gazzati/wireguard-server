@@ -11,7 +11,7 @@ dotenv.config()
 const envVarsSchema = Joi.object({
   NODE_ENV: Joi.string().valid(Env.Production, Env.Development, Env.Test).default(Env.Development),
   PORT: Joi.number().default(3000).description("App Port"),
-  IP_WHITELIST: Joi.string().default("").description("List of whitelisted IPs"),
+  IP_WHITELIST: Joi.string().default("").description("Whitelisted IP"),
   API_TOKEN: Joi.string().default("").description("API token")
 })
 
