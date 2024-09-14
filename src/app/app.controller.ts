@@ -12,17 +12,17 @@ export class AppController {
   }
 
   @Get("/clients")
-  getClients(): Promise<Array<string>> {
+  getClients(): Promise<Array<number>> {
     return this.appService.getClients()
   }
 
   @Post("/client")
-  addClient(@Body() payload: { id: string }): Promise<{ success: boolean }> {
+  addClient(@Body() payload: { id: number }): Promise<{ success: boolean }> {
     return this.appService.addClient(payload.id)
   }
 
   @Delete("/client/:id")
-  deleteClient(@Param("id") id: string): Promise<{ success: boolean }> {
+  deleteClient(@Param("id") id: number): Promise<{ success: boolean }> {
     return this.appService.deleteClient(id)
   }
 }

@@ -12,27 +12,27 @@ class Wireguard {
   private readonly profilePath = `/etc/wireguard/${wgParams.SERVER_WG_NIC}.conf`
   private readonly clientsFolderPath = `/etc/wireguard/clients`
 
-  public async getClients(): Promise<Array<string>> {
+  public async getClients(): Promise<Array<number>> {
     const output = await this.exec(`grep -E "^### Client" ${this.profilePath} | cut -d ' ' -f 3`)
     return output
       .split("\n")
-      .map(i => i.trim())
+      .map(Number)
       .filter(i => i)
   }
 
-  public async revokeClient(name: string): Promise<void> {
-    if (!name || !new RegExp(/^[a-zA-Z0-9_-]+$/).test(name)) throw Error("Invalid [name] format")
+  public async revokeClient(id: number): Promise<void> {
+    if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${name}\$" ${this.profilePath}`)
-    if (!exist) throw Error(`Client ${name} not found`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
+    if (!exist) throw Error(`Client ${id} not found`)
 
     await this.exec(`grep -E "^### Client" ${this.profilePath} | cut -d ' ' -f 3`)
 
     // remove [Peer] block matching $CLIENT_NAME
-    await this.exec(`sed -i "/^### Client ${name}\$/,/^$/d" ${this.profilePath}`)
+    await this.exec(`sed -i "/^### Client ${id}\$/,/^$/d" ${this.profilePath}`)
 
-    const clientConfPath = this.getClientConfPath(name)
-    const clientQrPath = this.getClientQrPath(name)
+    const clientConfPath = this.getClientConfPath(id)
+    const clientQrPath = this.getClientQrPath(id)
 
     // remove generated client conf
     await this.exec(`rm -f ${clientConfPath}`)
@@ -43,15 +43,15 @@ class Wireguard {
     await this.restartWg()
   }
 
-  public async newClient(name: string) {
-    if (!name || !new RegExp(/^[a-zA-Z0-9_-]+$/).test(name)) throw Error("Invalid [name] format")
+  public async newClient(id: number) {
+    if (!id || !new RegExp(/^[0-9_-]+$/).test(id)) throw Error("Invalid [id] format")
 
-    const clientConfPath = this.getClientConfPath(name)
-    const clientQrPath = this.getClientQrPath(name)
+    const clientConfPath = this.getClientConfPath(id)
+    const clientQrPath = this.getClientQrPath(id)
 
-    const exist = await this.exec(`grep -c -E "^### Client ${name}\$" ${this.profilePath}`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
     if (exist) {
-      console.error(`Client ${name} already exist`)
+      console.error(`Client ${id} already exist`)
 
       return {
         file: clientConfPath,
@@ -77,7 +77,7 @@ class Wireguard {
     const clientConf = this.generateClientConf(clientPrivateKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${clientConf}" > ${clientConfPath}`)
 
-    const serverConf = this.generateServerConf(name, clientPublicKey, clientPresharedKey, ipV4, ipV6)
+    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
 
     await this.restartWg()
@@ -127,21 +127,21 @@ class Wireguard {
   }
 
   private generateServerConf(
-    name: string,
+    id: number,
     clientPublicKey: string,
     clientPresharedKey: string,
     ipV4: string,
     ipV6: string
   ) {
-    return `\n### Client ${name}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
+    return `\n### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
   }
 
-  private getClientConfPath(name: string) {
-    return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${name}.conf`
+  private getClientConfPath(id: number) {
+    return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.conf`
   }
 
-  private getClientQrPath(name: string) {
-    return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${name}.png`
+  private getClientQrPath(id: number) {
+    return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.png`
   }
 
   private async restartWg() {

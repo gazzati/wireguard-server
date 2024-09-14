@@ -10,18 +10,18 @@ export class AppService {
     return { success: true }
   }
 
-  async getClients(): Promise<Array<string>> {
+  async getClients(): Promise<Array<number>> {
     return await wg.getClients()
   }
 
-  async addClient(name: string): Promise<{ success: boolean }> {
-    await wg.newClient(name)
+  async addClient(id: number): Promise<{ success: boolean }> {
+    await wg.newClient(id)
     return { success: true }
   }
 
-  async deleteClient(name: string): Promise<{ success: boolean }> {
+  async deleteClient(id: number): Promise<{ success: boolean }> {
     try {
-      await wg.revokeClient(name)
+      await wg.revokeClient(id)
       return { success: true }
     } catch (e: any) {
       throw Error(e.message)
