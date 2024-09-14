@@ -3,13 +3,11 @@ import util from "util"
 
 import { config } from "../config"
 import { CreateClientResponse } from "../intefaces/wg"
-import { Logger } from '@nestjs/common';
 
 const execute = util.promisify(childProcess.exec)
 
 const { wgParams } = config
 
-const logger = new Logger()
 
 class Wireguard {
   private readonly MAX_CLIENTS = 253
@@ -27,13 +25,13 @@ class Wireguard {
   public async revokeClient(id: number): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (!exist) throw Error(`Client ${id} not found`)
 
     await this.exec(`grep -E "^### Client" ${this.profilePath} | cut -d ' ' -f 3`)
 
     // remove [Peer] block matching $CLIENT_NAME
-    await this.exec(`sed -i "/^### Client ${id}\$/,/^$/d" ${this.profilePath}`)
+    await this.exec(`sed -i "/^### Client ${id}$/,/^$/d" ${this.profilePath}`)
 
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
@@ -53,7 +51,7 @@ class Wireguard {
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (exist) {
       console.error(`Client ${id} already exist`)
 
@@ -158,13 +156,12 @@ class Wireguard {
 
   private async exec(command: string) {
     try {
-      logger.log(111, command)
-      const { stdout, stderr } = await execute(command)
-      if (stderr) logger.error(stderr)
+      const { stdout } = await execute(command)
+      //if (stderr) logger.error(stderr)
 
       return stdout
-    } catch (e) {
-      throw logger.error(e)
+    } catch {
+      //throw logger.error(e)
     }
   }
 }
