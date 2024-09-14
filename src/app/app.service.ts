@@ -1,4 +1,6 @@
-import { Injectable } from "@nestjs/common"
+import { createReadStream } from "fs"
+
+import { Injectable, StreamableFile } from "@nestjs/common"
 
 import Wireguard from "../wireguard"
 
@@ -14,9 +16,11 @@ export class AppService {
     return await wg.getClients()
   }
 
-  async addClient(id: number): Promise<{ success: boolean }> {
-    await wg.newClient(id)
-    return { success: true }
+  async addClient(id: number): Promise<StreamableFile> {
+    const response = await wg.newClient(id)
+
+    const file = createReadStream(response.file);
+    return new StreamableFile(file);
   }
 
   async deleteClient(id: number): Promise<{ success: boolean }> {
