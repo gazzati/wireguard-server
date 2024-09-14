@@ -162,7 +162,7 @@ class Wireguard {
       //if (stderr) logger.error(stderr)
 
       return stdout
-    } catch () {
+    } catch {
       //throw Error(e.message)
     }
   }
