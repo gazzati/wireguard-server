@@ -16,11 +16,12 @@ export class AppService {
     return await wg.getClients()
   }
 
-  async addClient(id: number): Promise<StreamableFile> {
+  async addClient(id: number): Promise<{ success: boolean, alreadyExist?: boolean }> {
     const response = await wg.newClient(id)
-
-    const file = createReadStream(response.file);
-    return new StreamableFile(file);
+    return {
+      success: true,
+      alreadyExist: response.alreadyExist
+    }
   }
 
   async deleteClient(id: number): Promise<{ success: boolean }> {
@@ -30,5 +31,19 @@ export class AppService {
     } catch (e: any) {
       throw Error(e.message)
     }
+  }
+
+  getClientConf(id: number): StreamableFile {
+    const path = wg.getClientConfPath(id)
+
+    const conf = createReadStream(path);
+    return new StreamableFile(conf);
+  }
+
+  getClientQr(id: number): StreamableFile {
+    const path = wg.getClientQrPath(id)
+
+    const qr = createReadStream(path);
+    return new StreamableFile(qr);
   }
 }

@@ -17,12 +17,22 @@ export class AppController {
   }
 
   @Post("/client")
-  addClient(@Body() payload: { id: number }): Promise<StreamableFile> {
+  addClient(@Body() payload: { id: number }): Promise<{ success: boolean, alreadyExist?: boolean }> {
     return this.appService.addClient(payload.id)
   }
 
   @Delete("/client/:id")
   deleteClient(@Param("id") id: number): Promise<{ success: boolean }> {
     return this.appService.deleteClient(id)
+  }
+
+  @Get("/client/:id/conf")
+  getClientConf(@Param("id") id: number): StreamableFile {
+    return this.appService.getClientConf(id)
+  }
+
+  @Get("/client/:id/qr")
+  getClientQr(@Param("id") id: number): StreamableFile {
+    return this.appService.getClientQr(id)
   }
 }

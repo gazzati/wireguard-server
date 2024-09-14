@@ -53,11 +53,7 @@ class Wireguard {
     if (exist) {
       console.error(`Client ${id} already exist`)
 
-      return {
-        file: clientConfPath,
-        qr: clientQrPath,
-        alreadyExist: true
-      }
+      return { alreadyExist: true }
     }
 
     const dotIp = await this.getDotIp()
@@ -83,11 +79,6 @@ class Wireguard {
     await this.restartWg()
 
     await this.exec(`qrencode -t png -o ${clientQrPath} -r ${clientConfPath}`)
-
-    return {
-      file: clientConfPath,
-      qr: clientQrPath
-    }
   }
 
   private async getDotIp() {
@@ -136,11 +127,11 @@ class Wireguard {
     return `\n### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
   }
 
-  private getClientConfPath(id: number) {
+  public getClientConfPath(id: number) {
     return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.conf`
   }
 
-  private getClientQrPath(id: number) {
+  public getClientQrPath(id: number) {
     return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.png`
   }
 
