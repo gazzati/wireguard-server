@@ -163,7 +163,7 @@ class Wireguard {
 
       return stdout
     } catch (e) {
-      // console.error(e)
+      throw Error(e.message)
     }
   }
 }
