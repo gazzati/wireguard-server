@@ -1,4 +1,4 @@
-import { createReadStream } from "fs"
+import { createReadStream, readFileSync } from "fs"
 
 import { Injectable, StreamableFile } from "@nestjs/common"
 
@@ -40,10 +40,10 @@ export class AppService {
     return new StreamableFile(conf);
   }
 
-  getClientQr(id: number): StreamableFile {
+  getClientQr(id: number): string {
     const path = wg.getClientQrPath(id)
 
-    const qr = createReadStream(path);
-    return new StreamableFile(qr);
+    const qr = readFileSync(path);
+    return Buffer.from(qr).toString('base64');
   }
 }

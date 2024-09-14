@@ -32,7 +32,7 @@ export class AppController {
   }
 
   @Get("/client/:id/qr")
-  getClientQr(@Param("id") id: number): StreamableFile {
+  getClientQr(@Param("id") id: number): string {
     return this.appService.getClientQr(id)
   }
 }
