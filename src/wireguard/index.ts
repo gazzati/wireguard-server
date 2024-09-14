@@ -3,10 +3,13 @@ import util from "util"
 
 import { config } from "../config"
 import { CreateClientResponse } from "../intefaces/wg"
+import {Logger} from '@nestjs/common';
 
 const execute = util.promisify(childProcess.exec)
 
 const { wgParams } = config
+
+const logger = new Logger()
 
 class Wireguard {
   private readonly MAX_CLIENTS = 253
@@ -156,7 +159,7 @@ class Wireguard {
   private async exec(command: string) {
     try {
       const { stdout, stderr } = await execute(command)
-      if (stderr) console.info(stderr)
+      if (stderr) logger.error(stderr)
 
       return stdout
     } catch (e) {
