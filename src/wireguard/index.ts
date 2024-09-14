@@ -158,12 +158,12 @@ class Wireguard {
 
   private async exec(command: string) {
     try {
-      const { stdout, stderr } = await execute(command)
-      if (stderr) logger.error(stderr)
+      const { stdout } = await execute(command)
+      //if (stderr) logger.error(stderr)
 
       return stdout
-    } catch (e: any) {
-      throw Error(e.message)
+    } catch () {
+      //throw Error(e.message)
     }
   }
 }
