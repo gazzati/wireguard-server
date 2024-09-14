@@ -16,11 +16,11 @@ export class AppService {
     return await wg.getClients()
   }
 
-  async addClient(id: number): Promise<{ success: boolean, alreadyExist?: boolean }> {
+  async addClient(id: number): Promise<{ success: boolean, already_exist?: boolean }> {
     const response = await wg.newClient(id)
     return {
       success: true,
-      alreadyExist: response.alreadyExist
+      already_exist: response?.alreadyExist
     }
   }
 
