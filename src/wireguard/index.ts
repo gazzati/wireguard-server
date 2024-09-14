@@ -155,8 +155,8 @@ class Wireguard {
 
   private async exec(command: string) {
     try {
-      const { stdout } = await execute(command)
-      //if (stderr) console.info(stderr)
+      const { stdout, stderr } = await execute(command)
+      if (stderr) console.info(stderr)
 
       return stdout
     } catch (e) {
