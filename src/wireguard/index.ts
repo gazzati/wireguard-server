@@ -125,7 +125,7 @@ class Wireguard {
   }
 
   private generateClientConf(clientPrivateKey: string, clientPresharedKey: string, ipV4: string, ipV6: string) {
-    return `[Interface]\nPrivateKey = ${clientPrivateKey}\nAddress = ${ipV4}/32,${ipV6}/128\nDNS = ${wgParams.CLIENT_DNS_1},${wgParams.CLIENT_DNS_2}\n\n[Peer]\nPublicKey = ${wgParams.SERVER_PUB_KEY}\nPresharedKey = ${clientPresharedKey}Endpoint = ${wgParams.SERVER_PUB_IP}:${wgParams.SERVER_PORT}\nAllowedIPs = ${wgParams.ALLOWED_IPS}`
+    return `[Interface]\nPrivateKey = ${clientPrivateKey}Address = ${ipV4}/32,${ipV6}/128\nDNS = ${wgParams.CLIENT_DNS_1},${wgParams.CLIENT_DNS_2}\n\n[Peer]\nPublicKey = ${wgParams.SERVER_PUB_KEY}\nPresharedKey = ${clientPresharedKey}Endpoint = ${wgParams.SERVER_PUB_IP}:${wgParams.SERVER_PORT}\nAllowedIPs = ${wgParams.ALLOWED_IPS}`
   }
 
   private generateServerConf(
