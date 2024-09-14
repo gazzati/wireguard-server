@@ -2,6 +2,7 @@ import childProcess from "child_process"
 import util from "util"
 
 import { config } from "../config"
+import { CreateClientResponse } from "../intefaces/wg"
 
 const execute = util.promisify(childProcess.exec)
 
@@ -23,13 +24,13 @@ class Wireguard {
   public async revokeClient(id: number): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (!exist) throw Error(`Client ${id} not found`)
 
     await this.exec(`grep -E "^### Client" ${this.profilePath} | cut -d ' ' -f 3`)
 
     // remove [Peer] block matching $CLIENT_NAME
-    await this.exec(`sed -i "/^### Client ${id}\$/,/^$/d" ${this.profilePath}`)
+    await this.exec(`sed -i "/^### Client ${id}$/,/^$/d" ${this.profilePath}`)
 
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
@@ -43,17 +44,21 @@ class Wireguard {
     await this.restartWg()
   }
 
-  public async newClient(id: number) {
+  public async newClient(id: number): Promise<CreateClientResponse> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}\$" ${this.profilePath}`)
+    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (exist) {
       console.error(`Client ${id} already exist`)
 
-      return { alreadyExist: true }
+      return {
+        conf: clientConfPath,
+        qr: clientQrPath,
+        already_exist: true
+      }
     }
 
     const dotIp = await this.getDotIp()
@@ -79,12 +84,18 @@ class Wireguard {
     await this.restartWg()
 
     await this.exec(`qrencode -t png -o ${clientQrPath} -r ${clientConfPath}`)
+
+    return {
+      conf: clientConfPath,
+      qr: clientQrPath
+    }
   }
 
   private async getDotIp() {
     const baseIp = wgParams.SERVER_WG_IPV4.split(".").slice(0, -1).join(".")
     const availableDots = Array.from({ length: this.MAX_CLIENTS }, (_, i) => i + 2)
 
+    // eslint-disable-next-line @typescript-eslint/no-for-in-array
     for (const dot in availableDots) {
       const dotExist = await this.exec(`grep -c "${baseIp}.${dot}" ${this.profilePath}`)
       if (!dotExist) return dot
@@ -127,11 +138,11 @@ class Wireguard {
     return `\n### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
   }
 
-  public getClientConfPath(id: number) {
+  private getClientConfPath(id: number) {
     return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.conf`
   }
 
-  public getClientQrPath(id: number) {
+  private getClientQrPath(id: number) {
     return `${this.clientsFolderPath}/${wgParams.SERVER_WG_NIC}-client-${id}.png`
   }
 
@@ -144,7 +155,7 @@ class Wireguard {
 
   private async exec(command: string) {
     try {
-      const { stdout, stderr } = await execute(command)
+      const { stdout } = await execute(command)
       //if (stderr) console.info(stderr)
 
       return stdout

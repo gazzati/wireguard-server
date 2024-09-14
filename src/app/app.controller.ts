@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Post, Param, Body, StreamableFile } from "@nestjs/common"
+import { Controller, Get, Delete, Post, Param, Body } from "@nestjs/common"
 
 import { AppService } from "./app.service"
 
@@ -17,22 +17,12 @@ export class AppController {
   }
 
   @Post("/client")
-  addClient(@Body() payload: { id: number }): Promise<{ success: boolean, already_exist?: boolean }> {
+  addClient(@Body() payload: { id: number }): Promise<{ success: boolean, conf: string, qr: string, already_exist?: boolean }> {
     return this.appService.addClient(payload.id)
   }
 
   @Delete("/client/:id")
   deleteClient(@Param("id") id: number): Promise<{ success: boolean }> {
     return this.appService.deleteClient(id)
-  }
-
-  @Get("/client/:id/conf")
-  getClientConf(@Param("id") id: number): StreamableFile {
-    return this.appService.getClientConf(id)
-  }
-
-  @Get("/client/:id/qr")
-  getClientQr(@Param("id") id: number): string {
-    return this.appService.getClientQr(id)
   }
 }

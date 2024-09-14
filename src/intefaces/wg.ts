@@ -11,3 +11,9 @@ export interface WgParams {
   CLIENT_DNS_2: string
   ALLOWED_IPS: string
 }
+
+export interface CreateClientResponse {
+  conf: string
+  qr: string
+  already_exist?: boolean
+}

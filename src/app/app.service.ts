@@ -1,8 +1,10 @@
-import { createReadStream, readFileSync } from "fs"
+import { readFileSync } from "fs"
 
-import { Injectable, StreamableFile } from "@nestjs/common"
+import { Injectable } from "@nestjs/common"
 
 import Wireguard from "../wireguard"
+
+import type {CreateClientResponse} from "../intefaces/wg"
 
 const wg = new Wireguard()
 
@@ -16,11 +18,17 @@ export class AppService {
     return await wg.getClients()
   }
 
-  async addClient(id: number): Promise<{ success: boolean, already_exist?: boolean }> {
+  async addClient(id: number): Promise<{ success: boolean } & CreateClientResponse> {
     const response = await wg.newClient(id)
+
+    const conf = readFileSync(response.conf);
+    const qr = readFileSync(response.qr);
+
     return {
       success: true,
-      already_exist: response?.alreadyExist
+      conf: Buffer.from(conf).toString('base64'),
+      qr: Buffer.from(qr).toString('base64'),
+      already_exist: response?.already_exist
     }
   }
 
@@ -31,19 +39,5 @@ export class AppService {
     } catch (e: any) {
       throw Error(e.message)
     }
-  }
-
-  getClientConf(id: number): StreamableFile {
-    const path = wg.getClientConfPath(id)
-
-    const conf = createReadStream(path);
-    return new StreamableFile(conf);
-  }
-
-  getClientQr(id: number): string {
-    const path = wg.getClientQrPath(id)
-
-    const qr = readFileSync(path);
-    return Buffer.from(qr).toString('base64');
   }
 }
