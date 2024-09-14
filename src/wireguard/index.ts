@@ -44,7 +44,7 @@ class Wireguard {
   }
 
   public async newClient(id: number) {
-    if (!id || !new RegExp(/^[0-9_-]+$/).test(id)) throw Error("Invalid [id] format")
+    if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
