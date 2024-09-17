@@ -1,0 +1,1 @@
+git pull && yarn build && pm2 reestart 0 && pm2 logs
