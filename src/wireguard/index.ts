@@ -147,15 +147,15 @@ class Wireguard {
   }
 
   private async restartWg() {
-    await this.exec(`#!/bin/bash wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`, { "shell": "/bin/bash" })
+    await execute(`#!/bin/bash wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`, { "shell": "/bin/bash" })
 
     // await this.exec(`wg-quick down ${wgParams.SERVER_WG_NIC}`)
     // await this.exec(`wg-quick up ${wgParams.SERVER_WG_NIC}`)
   }
 
-  private async exec(command: string, opt?: any) {
+  private async exec(command: string) {
     try {
-      const { stdout } = await execute(command, opt)
+      const { stdout } = await execute(command)
       //if (stderr) logger.error(stderr)
 
       return stdout
