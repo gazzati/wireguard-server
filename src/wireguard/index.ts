@@ -42,7 +42,7 @@ class Wireguard {
     await this.restartWg()
   }
 
-  public async restoreClient(id: number): Promise<void> {
+  public async restoreClient(id: number, publicKey: string): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
@@ -53,15 +53,14 @@ class Wireguard {
 
     const clientConf = await this.exec(`cat ${clientConfPath}`)
 
-    const clientPublicKey = this.findPartInString(clientConf, "PublicKey")
     const clientPresharedKey = this.findPartInString(clientConf, "PresharedKey")
     const ips = this.findPartInString(clientConf, "Address")
 
-    if (!clientPublicKey || !clientPresharedKey || !ips) throw Error(`Client ${id} not found`)
+    if (!clientPresharedKey || !ips) throw Error(`Client ${id} not found`)
 
     const [ipV4, ipV6] = ips.split(",")
 
-    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, ipV4, ipV6)
+    const serverConf = this.generateServerConf(id, publicKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
 
     await this.restartWg()
@@ -110,7 +109,8 @@ class Wireguard {
 
     return {
       conf: clientConfPath,
-      qr: clientQrPath
+      qr: clientQrPath,
+      public_key: clientPublicKey
     }
   }
 

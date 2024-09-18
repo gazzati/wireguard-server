@@ -28,7 +28,8 @@ export class AppService {
       success: true,
       conf: Buffer.from(conf).toString("base64"),
       qr: Buffer.from(qr).toString("base64"),
-      already_exist: response?.already_exist
+      already_exist: response.already_exist,
+      public_key: response.public_key
     }
   }
 
@@ -41,9 +42,9 @@ export class AppService {
     }
   }
 
-  async enableClient(id: number): Promise<{ success: boolean }> {
+  async enableClient(id: number, publicKey: string): Promise<{ success: boolean }> {
     try {
-      await wg.restoreClient(id)
+      await wg.restoreClient(id, publicKey)
       return { success: true }
     } catch (e: any) {
       throw Error(e.message)
