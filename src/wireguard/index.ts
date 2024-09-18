@@ -55,11 +55,11 @@ class Wireguard {
 
     const clientPublicKey = this.findPartInString(clientConf, "PublicKey")
     const clientPresharedKey = this.findPartInString(clientConf, "PresharedKey")
-    const allowedIPs = this.findPartInString(clientConf, "AllowedIPs")
+    const ips = this.findPartInString(clientConf, "Address")
 
-    if (!clientPublicKey || !clientPresharedKey || !allowedIPs) throw Error(`Client ${id} not found`)
+    if (!clientPublicKey || !clientPresharedKey || !ips) throw Error(`Client ${id} not found`)
 
-    const [ipV4, ipV6] = allowedIPs.split(",")
+    const [ipV4, ipV6] = ips.split(",")
 
     const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
