@@ -155,7 +155,7 @@ class Wireguard {
     ipV4: string,
     ipV6: string
   ) {
-    return `### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
+    return `### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}\nPresharedKey = ${clientPresharedKey}\nAllowedIPs = ${ipV4}/32,${ipV6}/128`
   }
 
   private getClientConfPath(id: number) {
