@@ -29,7 +29,7 @@ export class AppController {
   }
 
   @Post("/client/enable")
-  enableClient(@Body() payload: { id: number, publicKey: string }): Promise<{ success: boolean }> {
-    return this.appService.enableClient(payload.id, payload.publicKey)
+  enableClient(@Body() payload: { id: number, public_key: string }): Promise<{ success: boolean }> {
+    return this.appService.enableClient(payload.id, payload.public_key)
   }
 }
