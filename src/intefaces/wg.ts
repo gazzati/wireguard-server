@@ -15,6 +15,6 @@ export interface WgParams {
 export interface CreateClientResponse {
   conf: string
   qr: string
+  public_key: string
   already_exist?: boolean
-  public_key?: string
 }

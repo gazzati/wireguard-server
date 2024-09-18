@@ -74,11 +74,18 @@ class Wireguard {
 
     const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (exist) {
-      console.error(`Client ${id} already exist`)
+      console.info(`Client ${id} already exist`)
+
+      const peerConf = await this.exec(`grep -A 2 "^### Client ${id}$" ${this.profilePath} | tail -n 1`)
+      if(!peerConf) throw Error("Not found existing client")
+
+      const publicKey = this.findPartInString(peerConf, "PublicKey")
+      if(!publicKey) throw Error("Not found publicKey for existing client")
 
       return {
         conf: clientConfPath,
         qr: clientQrPath,
+        public_key: publicKey,
         already_exist: true
       }
     }
