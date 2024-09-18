@@ -101,7 +101,7 @@ class Wireguard {
     const clientConf = this.generateClientConf(clientPrivateKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${clientConf}" > ${clientConfPath}`)
 
-    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, ipV4, ipV6)
+    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, `${ipV4}/32`, `${ipV6}/128`)
     await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
 
     await this.restartWg()
@@ -158,7 +158,7 @@ class Wireguard {
     ipV4: string,
     ipV6: string
   ) {
-    return `### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}\nPresharedKey = ${clientPresharedKey}\nAllowedIPs = ${ipV4}/32,${ipV6}/128`
+    return `### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}\nPresharedKey = ${clientPresharedKey}\nAllowedIPs = ${ipV4},${ipV6}`
   }
 
   private getClientConfPath(id: number) {
