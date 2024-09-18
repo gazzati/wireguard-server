@@ -45,10 +45,8 @@ class Wireguard {
   public async restoreClient(id: number): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
-    if (!exist) throw Error(`Client ${id} not found`)
-
     const clientConfPath = this.getClientConfPath(id)
+    if (!clientConfPath) throw Error(`Client ${id} not found`)
 
     const clientConf = await this.exec(`cat ${clientConfPath}`)
 
