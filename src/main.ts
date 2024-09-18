@@ -9,6 +9,7 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule, { logger: false })
   await app.listen(config.port)
+
   app.useLogger(logger)
   logger.log(`Application listening on port ${config.port}`)
 }

@@ -21,7 +21,7 @@ class Wireguard {
       .filter(i => i)
   }
 
-  public async revokeClient(id: number): Promise<void> {
+  public async disableClient(id: number): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
@@ -42,7 +42,7 @@ class Wireguard {
     await this.restartWg()
   }
 
-  public async restoreClient(id: number, publicKey: string): Promise<void> {
+  public async enableClient(id: number, publicKey: string): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
@@ -166,8 +166,7 @@ AllowedIPs = ${wgParams.ALLOWED_IPS}`
     ipV4: string,
     ipV6: string
   ) {
-    return `
-### Client ${id}
+    return `### Client ${id}
 [Peer]
 PublicKey = ${clientPublicKey.trim()}
 PresharedKey = ${clientPresharedKey.trim()}

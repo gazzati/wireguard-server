@@ -1,6 +1,6 @@
 import { readFileSync } from "fs"
 
-import { Injectable } from "@nestjs/common"
+import {Injectable, HttpException } from '@nestjs/common';
 
 import Wireguard from "../wireguard"
 
@@ -19,35 +19,39 @@ export class AppService {
   }
 
   async addClient(id: number): Promise<{ success: boolean } & CreateClientResponse> {
-    const response = await wg.newClient(id)
+    try {
+      const response = await wg.newClient(id)
 
-    const conf = readFileSync(response.conf)
-    const qr = readFileSync(response.qr)
+      const conf = readFileSync(response.conf)
+      const qr = readFileSync(response.qr)
 
-    return {
-      success: true,
-      conf: Buffer.from(conf).toString("base64"),
-      qr: Buffer.from(qr).toString("base64"),
-      already_exist: response.already_exist,
-      public_key: response.public_key
+      return {
+        success: true,
+        conf: Buffer.from(conf).toString("base64"),
+        qr: Buffer.from(qr).toString("base64"),
+        already_exist: response.already_exist,
+        public_key: response.public_key
+      }
+    } catch (e: any) {
+      throw new HttpException(e.message, 403)
     }
   }
 
   async disableClient(id: number): Promise<{ success: boolean }> {
     try {
-      await wg.revokeClient(id)
+      await wg.disableClient(id)
       return { success: true }
     } catch (e: any) {
-      throw Error(e.message)
+      throw new HttpException(e.message, 403)
     }
   }
 
   async enableClient(id: number, publicKey: string): Promise<{ success: boolean }> {
     try {
-      await wg.restoreClient(id, publicKey)
+      await wg.enableClient(id, publicKey)
       return { success: true }
     } catch (e: any) {
-      throw Error(e.message)
+      throw new HttpException(e.message, 403)
     }
   }
 }
