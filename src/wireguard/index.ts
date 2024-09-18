@@ -27,19 +27,41 @@ class Wireguard {
     const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
     if (!exist) throw Error(`Client ${id} not found`)
 
-    await this.exec(`grep -E "^### Client" ${this.profilePath} | cut -d ' ' -f 3`)
-
     // remove [Peer] block matching $CLIENT_NAME
     await this.exec(`sed -i "/^### Client ${id}$/,/^$/d" ${this.profilePath}`)
 
+    // const clientConfPath = this.getClientConfPath(id)
+    // const clientQrPath = this.getClientQrPath(id)
+
+    // // remove generated client conf
+    // await this.exec(`rm -f ${clientConfPath}`)
+
+    // // remove generated client qr
+    // await this.exec(`rm -f ${clientQrPath}`)
+
+    await this.restartWg()
+  }
+
+  public async restoreClient(id: number): Promise<void> {
+    if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
+
+    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
+    if (!exist) throw Error(`Client ${id} not found`)
+
     const clientConfPath = this.getClientConfPath(id)
-    const clientQrPath = this.getClientQrPath(id)
 
-    // remove generated client conf
-    await this.exec(`rm -f ${clientConfPath}`)
+    const clientConf = await this.exec(`cat ${clientConfPath}`)
 
-    // remove generated client qr
-    await this.exec(`rm -f ${clientQrPath}`)
+    const clientPublicKey = this.findPartInString(clientConf, "PublicKey")
+    const clientPresharedKey = this.findPartInString(clientConf, "PresharedKey")
+    const allowedIPs = this.findPartInString(clientConf, "AllowedIPs")
+
+    if (!clientPublicKey || !clientPresharedKey || !allowedIPs) throw Error(`Client ${id} not found`)
+
+    const [ipV4, ipV6] = allowedIPs.split(",")
+
+    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, ipV4, ipV6)
+    await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
 
     await this.restartWg()
   }
@@ -135,7 +157,7 @@ class Wireguard {
     ipV4: string,
     ipV6: string
   ) {
-    return `\n### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
+    return `### Client ${id}\n[Peer]\nPublicKey = ${clientPublicKey}PresharedKey = ${clientPresharedKey}AllowedIPs = ${ipV4}/32,${ipV6}/128`
   }
 
   private getClientConfPath(id: number) {
@@ -147,10 +169,21 @@ class Wireguard {
   }
 
   private async restartWg() {
-    await execute(`wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`, { "shell": "/bin/bash" })
+    await execute(`wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`, {
+      shell: "/bin/bash"
+    })
 
     // await this.exec(`wg-quick down ${wgParams.SERVER_WG_NIC}`)
     // await this.exec(`wg-quick up ${wgParams.SERVER_WG_NIC}`)
+  }
+
+  private findPartInString = (clientConf: string, part: string) => {
+    const parts = clientConf.split("\n")
+    const wantedParts = parts.filter(x => x.includes(part))
+    if (!wantedParts.length) return undefined
+
+    const value = wantedParts[0].match(/((?<==).)(.+$)/gm)?.[0]?.trim()
+    return value || null
   }
 
   private async exec(command: string) {

@@ -24,7 +24,12 @@ export class AppController {
   }
 
   @Delete("/client/:id")
-  deleteClient(@Param("id") id: number): Promise<{ success: boolean }> {
-    return this.appService.deleteClient(id)
+  disableClient(@Param("id") id: number): Promise<{ success: boolean }> {
+    return this.appService.disableClient(id)
+  }
+
+  @Post("/client/:id")
+  enableClient(@Param("id") id: number): Promise<{ success: boolean }> {
+    return this.appService.enableClient(id)
   }
 }

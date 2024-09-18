@@ -32,9 +32,18 @@ export class AppService {
     }
   }
 
-  async deleteClient(id: number): Promise<{ success: boolean }> {
+  async disableClient(id: number): Promise<{ success: boolean }> {
     try {
       await wg.revokeClient(id)
+      return { success: true }
+    } catch (e: any) {
+      throw Error(e.message)
+    }
+  }
+
+  async enableClient(id: number): Promise<{ success: boolean }> {
+    try {
+      await wg.restoreClient(id)
       return { success: true }
     } catch (e: any) {
       throw Error(e.message)
