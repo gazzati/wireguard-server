@@ -173,7 +173,8 @@ AllowedIPs = ${wgParams.ALLOWED_IPS}`
     ipV4: string,
     ipV6: string
   ) {
-    return `### Client ${id}
+    return `
+### Client ${id}
 [Peer]
 PublicKey = ${clientPublicKey.trim()}
 PresharedKey = ${clientPresharedKey.trim()}
