@@ -19,7 +19,7 @@ class Wireguard {
     return output
       .split("\n")
       .map(Number)
-      .filter(i => i)
+      .filter((i) => i)
   }
 
   public async disableClient(id: number): Promise<void> {
@@ -77,11 +77,13 @@ class Wireguard {
     if (existCount > 0) {
       console.info(`Client ${id} already exist`)
 
-      const peerConf = await this.exec(`grep -A 2 "^### Client ${id}$" ${this.profilePath} | tail -n 1`)
-      if(!peerConf) throw Error("Not found existing client")
+      const peerConf = await this.exec(
+        `grep -A 2 "^### Client ${id}$" ${this.profilePath} | tail -n 1`
+      )
+      if (!peerConf) throw Error("Not found existing client")
 
       const publicKey = this.findPartInString(peerConf, "PublicKey")
-      if(!publicKey) throw Error("Not found publicKey for existing client")
+      if (!publicKey) throw Error("Not found publicKey for existing client")
 
       return {
         conf: clientConfPath,
@@ -108,7 +110,13 @@ class Wireguard {
     const clientConf = this.generateClientConf(clientPrivateKey, clientPresharedKey, ipV4, ipV6)
     await this.exec(`echo "${clientConf}" > ${clientConfPath}`)
 
-    const serverConf = this.generateServerConf(id, clientPublicKey, clientPresharedKey, `${ipV4}/32`, `${ipV6}/128`)
+    const serverConf = this.generateServerConf(
+      id,
+      clientPublicKey,
+      clientPresharedKey,
+      `${ipV4}/32`,
+      `${ipV6}/128`
+    )
     await this.exec(`echo "${serverConf}" >> ${this.profilePath}`)
 
     await this.restartWg()
@@ -154,7 +162,12 @@ class Wireguard {
     return ipV6
   }
 
-  private generateClientConf(clientPrivateKey: string, clientPresharedKey: string, ipV4: string, ipV6: string) {
+  private generateClientConf(
+    clientPrivateKey: string,
+    clientPresharedKey: string,
+    ipV4: string,
+    ipV6: string
+  ) {
     return `[Interface]
 PrivateKey = ${clientPrivateKey.trim()}
 Address = ${ipV4}/32,${ipV6}/128
@@ -190,9 +203,12 @@ AllowedIPs = ${ipV4},${ipV6}`
   }
 
   private async restartWg() {
-    await execute(`wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`, {
-      shell: "/bin/bash"
-    })
+    await execute(
+      `wg syncconf ${wgParams.SERVER_WG_NIC} <(wg-quick strip ${wgParams.SERVER_WG_NIC})`,
+      {
+        shell: "/bin/bash"
+      }
+    )
 
     // await this.exec(`wg-quick down ${wgParams.SERVER_WG_NIC}`)
     // await this.exec(`wg-quick up ${wgParams.SERVER_WG_NIC}`)
@@ -200,7 +216,7 @@ AllowedIPs = ${ipV4},${ipV6}`
 
   private findPartInString = (clientConf: string, part: string) => {
     const parts = clientConf.split("\n")
-    const wantedParts = parts.filter(x => x.includes(part))
+    const wantedParts = parts.filter((x) => x.includes(part))
     if (!wantedParts.length) return undefined
 
     const value = wantedParts[0].match(/((?<==).)(.+$)/gm)?.[0]?.trim()

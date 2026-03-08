@@ -39,7 +39,7 @@ const getWgParams = (): WgParams => {
     ALLOWED_IPS: ""
   }
 
-  Object.keys(result).map(key => {
+  Object.keys(result).map((key) => {
     for (const param of params) {
       if (param.includes(`${key}=`)) {
         const value = param.replace(`${key}=`, "")

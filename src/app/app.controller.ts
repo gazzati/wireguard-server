@@ -19,7 +19,13 @@ export class AppController {
   @Post("/client")
   addClient(
     @Body() payload: { id: number }
-  ): Promise<{ success: boolean; conf: string; qr: string; public_key: string; already_exist?: boolean }> {
+  ): Promise<{
+    success: boolean
+    conf: string
+    qr: string
+    public_key: string
+    already_exist?: boolean
+  }> {
     return this.appService.addClient(payload.id)
   }
 
@@ -29,7 +35,7 @@ export class AppController {
   }
 
   @Post("/client/enable")
-  enableClient(@Body() payload: { id: number, public_key: string }): Promise<{ success: boolean }> {
+  enableClient(@Body() payload: { id: number; public_key: string }): Promise<{ success: boolean }> {
     return this.appService.enableClient(payload.id, payload.public_key)
   }
 }

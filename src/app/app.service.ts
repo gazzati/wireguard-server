@@ -1,6 +1,6 @@
 import { readFileSync } from "fs"
 
-import {Injectable, HttpException } from '@nestjs/common';
+import { Injectable, HttpException } from "@nestjs/common"
 
 import Wireguard from "../wireguard"
 

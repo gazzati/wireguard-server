@@ -1,1 +1,6 @@
-module.exports = require('@gazzati/eslint-config-node/.prettierrc')
+module.exports = {
+  semi: false,
+  singleQuote: false,
+  trailingComma: "none",
+  printWidth: 100
+}
