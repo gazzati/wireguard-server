@@ -1,5 +1,6 @@
 import childProcess from "child_process"
 import util from "util"
+import type { ExecException } from "child_process"
 
 import { config } from "../config"
 import { CreateClientResponse } from "../intefaces/wg"
@@ -24,8 +25,8 @@ class Wireguard {
   public async disableClient(id: number): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
-    if (!exist) throw Error(`Client ${id} not found`)
+    const existCount = await this.grepCount(`^### Client ${id}$`, this.profilePath)
+    if (existCount === 0) throw Error(`Client ${id} not found`)
 
     // remove [Peer] block matching $CLIENT_NAME
     await this.exec(`sed -i "/^### Client ${id}$/,/^$/d" ${this.profilePath}`)
@@ -45,8 +46,8 @@ class Wireguard {
   public async enableClient(id: number, publicKey: string): Promise<void> {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
-    if (exist) throw Error(`Client ${id} already exist`)
+    const existCount = await this.grepCount(`^### Client ${id}$`, this.profilePath)
+    if (existCount > 0) throw Error(`Client ${id} already exist`)
 
     const clientConfPath = this.getClientConfPath(id)
     if (!clientConfPath) throw Error(`Client ${id} not found`)
@@ -72,8 +73,8 @@ class Wireguard {
     const clientConfPath = this.getClientConfPath(id)
     const clientQrPath = this.getClientQrPath(id)
 
-    const exist = await this.exec(`grep -c -E "^### Client ${id}$" ${this.profilePath}`)
-    if (exist) {
+    const existCount = await this.grepCount(`^### Client ${id}$`, this.profilePath)
+    if (existCount > 0) {
       console.info(`Client ${id} already exist`)
 
       const peerConf = await this.exec(`grep -A 2 "^### Client ${id}$" ${this.profilePath} | tail -n 1`)
@@ -125,10 +126,9 @@ class Wireguard {
     const baseIp = wgParams.SERVER_WG_IPV4.split(".").slice(0, -1).join(".")
     const availableDots = Array.from({ length: this.MAX_CLIENTS }, (_, i) => i + 2)
 
-    // eslint-disable-next-line @typescript-eslint/no-for-in-array
-    for (const dot in availableDots) {
-      const dotExist = await this.exec(`grep -c "${baseIp}.${dot}" ${this.profilePath}`)
-      if (!dotExist) return dot
+    for (const dot of availableDots) {
+      const dotExistCount = await this.grepCount(`${baseIp}.${dot}`, this.profilePath)
+      if (dotExistCount === 0) return dot.toString()
     }
 
     throw new Error(`The subnet configured supports only ${this.MAX_CLIENTS} clients`)
@@ -138,8 +138,8 @@ class Wireguard {
     const baseIp = wgParams.SERVER_WG_IPV4.split(".").slice(0, -1).join(".")
     const ipV4 = `${baseIp}.${dotIp}`
 
-    const ipV4Exist = await this.exec(`grep -c "${ipV4}/32" ${this.profilePath}`)
-    if (ipV4Exist) throw new Error("Client with the specified IPv4 was already created")
+    const ipV4ExistCount = await this.grepCount(`${ipV4}/32`, this.profilePath)
+    if (ipV4ExistCount > 0) throw new Error("Client with the specified IPv4 was already created")
 
     return ipV4
   }
@@ -148,8 +148,8 @@ class Wireguard {
     const baseIp = wgParams.SERVER_WG_IPV6.split("::")[0]
     const ipV6 = `${baseIp}::${dotIp}`
 
-    const ipV6Exist = await this.exec(`grep -c "${ipV6}/128" ${this.profilePath}`)
-    if (ipV6Exist) throw new Error("Client with the specified IPv6 was already created")
+    const ipV6ExistCount = await this.grepCount(`${ipV6}/128`, this.profilePath)
+    if (ipV6ExistCount > 0) throw new Error("Client with the specified IPv6 was already created")
 
     return ipV6
   }
@@ -209,13 +209,20 @@ AllowedIPs = ${ipV4},${ipV6}`
 
   private async exec(command: string) {
     try {
-      const { stdout } = await execute(command)
-      //if (stderr) logger.error(stderr)
+      const { stdout, stderr } = await execute(command)
+      if (stderr) throw new Error(stderr.trim() || `Command failed: ${command}`)
 
       return stdout
-    } catch {
-      //throw logger.error(e)
+    } catch (e) {
+      const error = e as ExecException & { stderr?: string; stdout?: string }
+      const message = error.stderr?.trim() || error.message || `Command failed: ${command}`
+      throw new Error(message)
     }
+  }
+
+  private async grepCount(pattern: string, path: string): Promise<number> {
+    const { stdout } = await execute(`grep -c -E "${pattern}" ${path} || true`)
+    return Number(stdout.trim()) || 0
   }
 }
 

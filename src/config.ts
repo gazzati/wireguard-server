@@ -15,8 +15,8 @@ const envVarsSchema = Joi.object({
   API_TOKEN: Joi.string().default("").description("API token")
 })
 
-const { error, value: envVars } = envVarsSchema.validate(process.env)
-if (error) new Error(`Config validation error: ${error.message}`)
+const { error, value: envVars } = envVarsSchema.validate(process.env, { allowUnknown: true })
+if (error) throw new Error(`Config validation error: ${error.message}`)
 
 const getWgParams = (): WgParams => {
   const file = readFileSync("/etc/wireguard/params", "utf-8")
