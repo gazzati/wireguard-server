@@ -215,8 +215,8 @@ AllowedIPs = ${ipV4},${ipV6}`
       return stdout
     } catch (e) {
       const error = e as ExecException & { stderr?: string; stdout?: string }
-      const message = error.stderr?.trim() || error.message || `Command failed: ${command}`
-      throw new Error(message)
+      error.message = error.stderr?.trim() || error.message || `Command failed: ${command}`
+      throw error
     }
   }
 
