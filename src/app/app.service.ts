@@ -4,7 +4,7 @@ import { Injectable, HttpException } from "@nestjs/common"
 
 import Wireguard from "../wireguard"
 
-import type { CreateClientResponse } from "../intefaces/wg"
+import type { CreateClientResponse, PeerMetrics } from "../intefaces/wg"
 
 const wg = new Wireguard()
 
@@ -16,6 +16,20 @@ export class AppService {
 
   async getClients(): Promise<Array<number>> {
     return await wg.getClients()
+  }
+
+  async getPeers(): Promise<{ success: boolean; peers: Array<PeerMetrics>; server_time: string }> {
+    try {
+      const peers = await wg.getPeers()
+
+      return {
+        success: true,
+        peers,
+        server_time: new Date().toISOString()
+      }
+    } catch (e: any) {
+      throw new HttpException(e.message, 403)
+    }
   }
 
   async addClient(id: number): Promise<{ success: boolean } & CreateClientResponse> {

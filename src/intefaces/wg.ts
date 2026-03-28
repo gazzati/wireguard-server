@@ -18,3 +18,14 @@ export interface CreateClientResponse {
   public_key: string
   already_exist?: boolean
 }
+
+export interface PeerMetrics {
+  public_key: string
+  preshared_key: string | null
+  endpoint: string | null
+  allowed_ips: string
+  latest_handshake_at: string | null
+  rx_bytes: number
+  tx_bytes: number
+  persistent_keepalive: number | null
+}

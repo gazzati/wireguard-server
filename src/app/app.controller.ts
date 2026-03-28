@@ -1,6 +1,7 @@
 import { Controller, Get, Delete, Post, Param, Body } from "@nestjs/common"
 
 import { AppService } from "./app.service"
+import type { PeerMetrics } from "../intefaces/wg"
 
 @Controller()
 export class AppController {
@@ -14,6 +15,11 @@ export class AppController {
   @Get("/clients")
   getClients(): Promise<Array<number>> {
     return this.appService.getClients()
+  }
+
+  @Get("/peers")
+  getPeers(): Promise<{ success: boolean; peers: Array<PeerMetrics>; server_time: string }> {
+    return this.appService.getPeers()
   }
 
   @Post("/client")

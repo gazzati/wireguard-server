@@ -3,7 +3,7 @@ import util from "util"
 import type { ExecException } from "child_process"
 
 import { config } from "../config"
-import { CreateClientResponse } from "../intefaces/wg"
+import { CreateClientResponse, PeerMetrics } from "../intefaces/wg"
 
 const execute = util.promisify(childProcess.exec)
 
@@ -20,6 +20,43 @@ class Wireguard {
       .split("\n")
       .map(Number)
       .filter((i) => i)
+  }
+
+  public async getPeers(): Promise<Array<PeerMetrics>> {
+    const output = await this.exec(`wg show ${wgParams.SERVER_WG_NIC} dump`)
+
+    return output
+      .trim()
+      .split("\n")
+      .slice(1)
+      .filter(Boolean)
+      .map((line) => {
+        const [
+          publicKey,
+          presharedKey,
+          endpoint,
+          allowedIps,
+          latestHandshake,
+          rxBytes,
+          txBytes,
+          persistentKeepalive
+        ] = line.split("\t")
+
+        const handshakeAt = Number(latestHandshake)
+        const keepalive = Number(persistentKeepalive)
+
+        return {
+          public_key: publicKey,
+          preshared_key: presharedKey === "(none)" ? null : presharedKey,
+          endpoint: endpoint === "(none)" ? null : endpoint,
+          allowed_ips: allowedIps,
+          latest_handshake_at:
+            handshakeAt > 0 && Number.isFinite(handshakeAt) ? new Date(handshakeAt * 1000).toISOString() : null,
+          rx_bytes: Number(rxBytes) || 0,
+          tx_bytes: Number(txBytes) || 0,
+          persistent_keepalive: keepalive > 0 && Number.isFinite(keepalive) ? keepalive : null
+        }
+      })
   }
 
   public async disableClient(id: number): Promise<void> {
