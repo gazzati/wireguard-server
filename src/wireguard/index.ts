@@ -138,7 +138,7 @@ class Wireguard {
     const clientPrivateKey = await this.exec("wg genkey")
     if (!clientPrivateKey) throw Error("[clientPrivateKey] not generated")
 
-    const clientPublicKey = await this.exec(`echo "${clientPrivateKey}" | wg pubkey`)
+    const clientPublicKey = (await this.exec(`echo "${clientPrivateKey}" | wg pubkey`)).trim()
     if (!clientPublicKey) throw Error("[clientPublicKey] not generated")
 
     const clientPresharedKey = await this.exec("wg genpsk")
