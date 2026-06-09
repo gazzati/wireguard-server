@@ -84,7 +84,7 @@ class Wireguard {
     if (!id || !new RegExp(/^[0-9_-]+$/).test(id.toString())) throw Error("Invalid [id] format")
 
     const existCount = await this.grepCount(`^### Client ${id}$`, this.profilePath)
-    if (existCount > 0) throw Error(`Client ${id} already exist`)
+    if (existCount > 0) return
 
     const clientConfPath = this.getClientConfPath(id)
     if (!clientConfPath) throw Error(`Client ${id} not found`)
